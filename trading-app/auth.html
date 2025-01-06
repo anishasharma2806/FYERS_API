@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Auth Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enter Authorization Code</h1>
+    <form action="/auth-callback" method="POST">
+        <input type="text" name="auth_code" placeholder="Enter Auth Code" required />
+        <button type="submit">Submit</button>
+    </form>
+    <p>If you don't have an auth code, <a href="/login">login here</a>.</p>
+</body>
+</html>

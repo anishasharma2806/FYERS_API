@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FYERS Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input, select {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="authSection">
+        <h1>FYERS Login</h1>
+        <button onclick="redirectToLogin()">Login with FYERS</button>
+    </div>
+
+    <div id="dashboardSection" style="display: none;">
+        <h1>FYERS Dashboard</h1>
+        <button onclick="fetchProfile()">Fetch Profile</button>
+        <button onclick="fetchPositions()">Fetch Positions</button>
+        <button onclick="fetchHoldings()">Fetch Holdings</button>
+        <button onclick="fetchOrders()">Fetch Orders</button>
+
+        <div id="dataSection" style="margin-top: 20px;">
+            <pre id="dataDisplay"></pre>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2>Place Order</h2>
+            <input type="text" id="symbol" placeholder="Symbol (e.g., NSE:INFY-EQ)" />
+            <input type="number" id="qty" placeholder="Quantity" />
+            <select id="action">
+                <option value="BUY">BUY</option>
+                <option value="SELL">SELL</option>
+            </select>
+            <input type="number" id="price" placeholder="Price (optional)" />
+            <button onclick="placeOrder()">Place Order</button>
+        </div>
+    </div>
+
+    <script>
+        function redirectToLogin() {
+            window.location.href = "/login";
+        }
+
+        async function checkAuth() {
+            try {
+                const response = await fetch("/check-auth");
+                const data = await response.json();
+                if (data.isAuthenticated) {
+                    document.getElementById("authSection").style.display = "none";
+                    document.getElementById("dashboardSection").style.display = "block";
+                } else {
+                    document.getElementById("authSection").style.display = "block";
+                    document.getElementById("dashboardSection").style.display = "none";
+                }
+            } catch (error) {
+            console.error("Error checking auth:", error);
+            alert("Failed to check authentication. Please refresh the page.");
+        }
+        }
+
+        function handleApiError(error) {
+            console.error("API Error:", error);
+            alert("An error occurred. Please try again or check your connection.");
+        }
+
+        async function fetchProfile() {
+            try {
+                const response = await fetch("/profile");
+                if (!response.ok) throw new Error("Failed to fetch profile");
+                const data = await response.json();
+                document.getElementById("dataDisplay").textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                handleApiError(error);
+            }
+        }
+
+        async function fetchPositions() {
+            try {
+                const response = await fetch("/positions");
+                if (!response.ok) throw new Error("Failed to fetch positions");
+                const data = await response.json();
+                document.getElementById("dataDisplay").textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                handleApiError(error);
+            }
+        }
+
+        async function fetchHoldings() {
+            try {
+                const response = await fetch("/holdings");
+                if (!response.ok) throw new Error("Failed to fetch holdings");
+                const data = await response.json();
+                document.getElementById("dataDisplay").textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                handleApiError(error);
+            }
+        }
+
+        async function fetchOrders() {
+            try {
+                const response = await fetch("/orders");
+                if (!response.ok) throw new Error("Failed to fetch orders");
+                const data = await response.json();
+                document.getElementById("dataDisplay").textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                handleApiError(error);
+            }
+        }
+
+        async function placeOrder() {
+
+            // Input validation
+        if (!symbol || !qty || isNaN(qty) || qty <= 0) {
+            alert("Please enter a valid symbol and quantity.");
+            return;
+        }
+            try {
+                const symbol = document.getElementById("symbol").value;
+                const qty = document.getElementById("qty").value;
+                const action = document.getElementById("action").value;
+                const price = document.getElementById("price").value;
+
+                const response = await fetch("/place-order", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ symbol, qty, type: action, price, order_type: "LIMIT" }),
+                });
+
+                if (!response.ok) throw new Error("Failed to place order");
+                const data = await response.json();
+                alert("Order placed successfully: " + JSON.stringify(data));
+            } catch (error) {
+                handleApiError(error);
+            }
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>
